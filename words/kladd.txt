@@ -1,0 +1,13 @@
+kula - kall
+
+djur
+tjur
+fyra
+karl
+lava
+fall
+fula
+
+kula - fula
+
+#steg1 skapa grafstruktur
