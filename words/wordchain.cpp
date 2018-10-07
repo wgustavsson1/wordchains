@@ -3,7 +3,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
-#include <queue> 
+#include <queue>
 
 using std::vector;
 using std::map;
@@ -30,6 +30,7 @@ struct Node
     int len;
     string word;
     vector<string> chain;
+    bool visited = false;
 };
 
 bool differsByOneChar(string word1, string word2)
@@ -49,68 +50,18 @@ bool differsByOneChar(string word1, string word2)
 }
 
 vector<string> nextWords(const Dictionary & dict, const string & from, const string & to, const vector<string> & used_words)
-{   
+{
     std::vector<string> words;
     for(auto i = dict.begin(); i != dict.end(); i++)
     {
         if(differsByOneChar(from,*i) && from != *i)
         {
            words.push_back(*i);
-        } 
+        }
     }
 
     return words;
 }
-
-/*vector<Node> createGraph(const Dictionary & dict, string from , string to)
-{   
-    vector<Node> graph;
-    vector<string> words;
-    words.push_back(from);
-    string previous;
-    std::vector<string> used_words;
-
-    bool done = false;
-    while(!done)
-    {
-        if(std::find(words.begin(), words.end(),to) != words.end())done = true; // If word found
-
-        //cout << "loop1" << endl;
-        for(string word: words)
-        {   
-            //cout << "loop2" << endl;
-            Node currNode = Node();
-            currNode.edges = nextWords(dict,word,to,used_words);
-            //if(graph.find(word) != graph.end())
-            //{
-              //  return graph;
-            //}
-            //cout << word << "!!!!" << endl;
-            graph.push_back(currNode);
-        }
-        
-        std::vector<string> newWords;
-        for(int i = 0; i< words.size(); i++)
-        {   
-            previous = words[0];
-            //cout << words[i] << endl;
-            std::vector<string> v;
-            v = nextWords(dict,words[i],to,used_words);
-            for(string str : v)
-            {
-                newWords.push_back(str);
-                used_words.push_back(str);
-            }
-        }
-        words = newWords;
-    }
-
-    cout << "GRAPH CREATED!!" << endl;
-    return graph;
-}*/
-
-
-
 
 bool includeString(vector<string> vec, string str)
 {
@@ -123,7 +74,7 @@ bool includeString(vector<string> vec, string str)
 }
 
 void print_graph(map<string,Node> graph)
-{   
+{
 
     for(auto i = graph.begin();i != graph.end(); i++)
     {
@@ -134,35 +85,46 @@ void print_graph(map<string,Node> graph)
        // }
     }
 }
-vector<string> find_shortest(const Dictionary &dict, const string &from, const string &to) {
+vector<string> find_shortest(Dictionary dict, const string &from, const string &to) {
     vector<string> i_vec;
     i_vec.push_back(from);
     queue<Node> Q;
     Node item = {1,from,i_vec};
     Q.push(item);
 
+    //BFS
     while(!Q.empty())
     {
-        Node curr = Q.front(); Q.pop();
+        Node curr = Q.front(); Q.pop(); //get first element and remove it
 
-        for(auto i = dict.begin(); i != dict.end(); i++)
-        {   
-            string temp = *i;
-            if(differsByOneChar(curr.word,temp))
+        for(auto it = dict.begin(); it != dict.end();)
+        {
+            string word = *it;
+
+            if(differsByOneChar(curr.word,word))
             {
-                item.word = temp;
+                item.word = word;
                 item.len = curr.len + 1;
                 item.chain = curr.chain;
-                item.chain.push_back(item.word);
+                item.chain.push_back(word);
+                it = dict.erase(it);
                 Q.push(item);
-
-                if(temp == to)
+                if(word == to)
                 {
-                    return item.chain;
+                  return item.chain;
                 }
             }
+            else
+            {
+              ++it;
+            }
+
         }
     }
+
+    //If no chain was found
+    vector<string> empty; empty.push_back(from);
+    return empty;
 
 }
 
@@ -173,9 +135,22 @@ vector<string> find_shortest(const Dictionary &dict, const string &from, const s
  * ordkedja som hittats. Det sista elementet ska vara 'word'.
  */
 vector<string> find_longest(const Dictionary &dict, const string &word) {
-    vector<string> result;
+  //För alla ord i ordlistan kör find_shortest på det ordet
+  //och se vilket ord som ger längst väg.
 
-    
+  string curr_word;
+  int len = 0;
+  for(auto i = dict.begin(); i != dict.end(); i++)
+  {
+    vector<string> curr_chain = find_shortest(dict,*i,word);
+    if(curr_chain.size() > len)
+    {
+      len = curr_chain.size();
+      curr_word = *i;
+    }
+  }
+
+  return find_shortest(dict,curr_word,word);
 }
 
 
