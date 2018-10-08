@@ -27,10 +27,8 @@ typedef vector<string> Dictionary;
 
 struct Node
 {
-    int len;
     string word;
     vector<string> chain;
-    bool visited = false;
 };
 
 bool differsByOneChar(string word1, string word2)
@@ -86,10 +84,12 @@ void print_graph(map<string,Node> graph)
     }
 }
 vector<string> find_shortest(Dictionary dict, const string &from, const string &to) {
-    vector<string> i_vec;
-    i_vec.push_back(from);
+    vector<string> start_vector;
+    start_vector.push_back(from);
     queue<Node> Q;
-    Node item = {1,from,i_vec};
+    Node item =  Node();
+    item.word = from;
+    item.chain = start_vector;
     Q.push(item);
 
     //BFS
@@ -104,7 +104,6 @@ vector<string> find_shortest(Dictionary dict, const string &from, const string &
             if(differsByOneChar(curr.word,word))
             {
                 item.word = word;
-                item.len = curr.len + 1;
                 item.chain = curr.chain;
                 item.chain.push_back(word);
                 it = dict.erase(it);
@@ -134,11 +133,11 @@ vector<string> find_shortest(Dictionary dict, const string &from, const string &
  * Hitta den längsta kortaste ordkedjan som slutar i 'word' i ordlistan 'dict'. Returvärdet är den
  * ordkedja som hittats. Det sista elementet ska vara 'word'.
  */
-vector<string> find_longest(const Dictionary &dict, const string &word) {
+vector<string> find_longest(Dictionary dict, const string &word) {
   //För alla ord i ordlistan kör find_shortest på det ordet
   //och se vilket ord som ger längst väg.
 
-  string curr_word;
+  /*string curr_word;
   int len = 0;
   for(auto i = dict.begin(); i != dict.end(); i++)
   {
@@ -151,6 +150,45 @@ vector<string> find_longest(const Dictionary &dict, const string &word) {
   }
 
   return find_shortest(dict,curr_word,word);
+  */
+  Dictionary dict2 = dict; // save complete dict for later use
+  vector<string> start_vector;
+  start_vector.push_back(word);
+  queue<Node> Q;
+  Node item = Node();
+  item.chain = start_vector;
+  item.word = word;
+  Q.push(item);
+
+  //BFS
+  while(!Q.empty())
+  {
+      Node curr = Q.front(); Q.pop(); //get first element and remove it
+
+      for(auto it = dict.begin(); it != dict.end();)
+      {
+          string word = *it;
+
+          if(differsByOneChar(curr.word,word))
+          {
+              item.word = word;
+              item.chain = curr.chain;
+              item.chain.push_back(word);
+              it = dict.erase(it);
+              Q.push(item);
+
+          }
+          else
+          {
+            ++it;
+          }
+
+      }
+  }
+
+  return find_shortest(dict2,item.chain[item.chain.size()-1],word);
+
+
 }
 
 
